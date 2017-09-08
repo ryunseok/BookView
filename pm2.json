@@ -1,0 +1,10 @@
+{
+	"name": "comicglass",
+	"script": "bin/www",
+	"watch": ["routes", "app.js", "user.htpasswd"],
+	"ignore_watch": ["node_modules"],
+	"autorestart": true,
+	"env": {
+			"NODE_ENV": "production"
+		}
+}
