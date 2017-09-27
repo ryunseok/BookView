@@ -8,22 +8,51 @@ var time = new Date();
 var j = 0;
 var elapsedTime = 0;
 var update_list = [];
-
+//var supportedExt = [".gif", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".zip", ".rar", ".cbz", ".cbr", ".bmp", ".pdf", ".cgt", ".webp", "mp4", "smi"];
+var supportedExt = [".zip", ".rar", ".pdf"];
+var bookCover = [".jpg", ".png"];
+var bookCoverPath = "";
 function updatedFile(path, file) {
   //console.log(path);
-  return {
-  title: file,
-  path: encodeURIComponent(path).split("%2F").join("/").replace('/../../book',"")
+  var parent_path = "";
+  var split_path = path.split("/");
+  //console.log(split_path);  
+  for (var i = 1; i < split_path.length - 1; i++) {
+    parent_path += ('/' + split_path[i]);
+    // console.log(i + 'th:' + parent_path);
+  }
+  var updated_title, updated_path;
+  parent_path += '/';
+  if ('완결' == split_path[split_path.length - 2] || '미완' == split_path[split_path.length - 2]) {
+
+    updated_title = '[' + split_path[split_path.length - 3] + ']' + file;
+    updated_path = encodeURIComponent(path).split("%2F").join("/").replace('/../../book', "");
+  }
+  else if ('라이트노벨' == split_path[split_path.length - 2] || 'SF' == split_path[split_path.length - 2]) {
+
+    updated_title = '[' + split_path[split_path.length - 4] + ']' + file;
+    updated_path = encodeURIComponent(path).split("%2F").join("/").replace('/../../book', "");
+  }
+  else {
+
+    updated_title = '[' + split_path[split_path.length - 4] + ']' + split_path[split_path.length - 2];
+    updated_path = encodeURIComponent(parent_path).split("%2F").join("/").replace('/../../book', "");
   }
 
+  return {
+    title: updated_title,
+    path: updated_path,
+    date: 0
+
+  }
 }
 
-console.log("clear");
 function updateList(path) {
   var sub_dir = fs.readdirSync(path);
+  var bOverlap = 0;
   //console.log("sub_dir count :" + sub_dir.length + '\n');
   for (var i = 0; i < sub_dir.length; i++) {
-    var sub_path = path + "/" + sub_dir[i];  
+    var sub_path = path + "/" + sub_dir[i];
     var file = fs.statSync(sub_path);
 
     if (file.isDirectory()) {
@@ -31,28 +60,46 @@ function updateList(path) {
       updateList(sub_path);
     }
     else {
-      elapsedTime = (time.getTime() - file.mtime.getTime()) / (1000 * 3600 * 24);
+      elapsedTime = (time.getTime() - file.mtime.getTime()) / (1000 * 3600 * 24); //conversion ms to day
       //console.log(elapsedTime);
       if (30 > elapsedTime) {
-        const supportedExt = [".gif", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".zip", ".rar", ".cbz", ".cbr", ".bmp", ".pdf", ".cgt", ".webp", "mp4", "smi"];
         for (var k = 0; k < supportedExt.length; ++k) {
           if (sub_path.endsWith(supportedExt[k])) {
-            update_list[j++] = updatedFile(sub_path, sub_dir[i]);
+            var temp = updatedFile(sub_path, sub_dir[i]);
+            temp.date = file.mtime.getTime();
+            for (var n = 0; n < update_list.length; n++) {
+              if (temp.title == update_list[n].title) {
+               // console.log(temp.path);
+                update_list[n] = temp;
+                bOverlap = true;
+              }
+            }
+            if (!bOverlap) {
+              update_list[j++] = temp;
+            }
             // console.log(sub_path);
           }
-           }
         }
       }
     }
-    return;
   }
+  return;
+}
 
 updateList(root_path);
 
-// for(var i = 0; i < update_list.length; i++)
-// {
-// console.log(update_list[i].path);
+update_list.sort(function (a, b) {
+  var x = a.date, y = b.date;
+  return x > y ? -1 : x < y ? 1 : 0;
+
+});
+
+// for(var i = 0; i < update_list.length; i++){
+//  // console.log(update_list[i].title + ':' + update_list[i].date );
+//   console.log(update_list[i].path);
+
 // }
+
 
 router.get('/*', function (req, res, next) {
   const path = decodeURIComponent(req.path);
@@ -68,7 +115,7 @@ router.get('/*', function (req, res, next) {
         date: (file.mtime.getTime() / 1000)
       }
     } else {
-     
+
       return {
         isDirectory: false,
         title: filename,
@@ -81,41 +128,42 @@ router.get('/*', function (req, res, next) {
   }
 
   function matchExt(file) {
-  if (file.title.startsWith('.')) {
+    if (file.title.startsWith('.')) {
+      return false;
+    }
+    if (file.isDirectory) return true;
+    for (var i = 0; i < supportedExt.length; ++i) {
+      if (file.title.endsWith(supportedExt[i])) {
+        return true;
+      }
+      // else if(file.title.endsWith(bookCover[i]))
+      // {
+      //   bookCoverPath = encodeURIComponent(path + file.title).split("%2F").join("/");
+      //   console.log(path+file.title);
+      //   return false;
+      // }
+    }
     return false;
   }
-  if (file.isDirectory) return true;
-  const supportedExt = [".gif", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".zip", ".rar", ".cbz", ".cbr", ".bmp", ".pdf", ".cgt", ".webp", "mp4", "smi"];
-  for (var i = 0; i < supportedExt.length; ++i) {
-    if (file.title.endsWith(supportedExt[i])) {
-      return true;
-    }
-  }
-  return false;
-}
 
 
   var book_list = dir.map(mapFile).filter(matchExt);
   book_list.sort(function (a, b) {
     if (!a.isDirectory && !b.isDirectory) {
       var x = a.title.toLowerCase(), y = b.title.toLowerCase();
-      return x > y ? -1 : x < y ? 1 : 0;
+      return x < y ? -1 : x > y ? 1 : 0;
+    }
+    else if (a.isDirectory == b.isDirectory) {
+
+        var x = a.title.toLowerCase(), y = b.title.toLowerCase();
+        return x < y ? -1 : x > y ? 1 : 0;
+
     }
     else {
-      if (a.isDirectory == b.isDirectory) {
-        if (a.date == b.date) {
-          var x = a.title.toLowerCase(), y = b.title.toLowerCase();
-          return x > y ? -1 : x < y ? 1 : 0;
-        }
-        else {
-          return a.date > b.date ? -1 : a.date < b.date ? 1 : 0;
-        }
-      }
-      else {
-        return a.isDirectory > b.isDirectory ? -1 : a.isDirectory < b.isDirectory ? 1 : 0;
-      }
+      return a.isDirectory > b.isDirectory ? -1 : a.isDirectory < b.isDirectory ? 1 : 0;
     }
-  });
+
+});
 
   var selected_title = "";
   var parent_path = "";
@@ -136,6 +184,7 @@ router.get('/*', function (req, res, next) {
     parent: encodeURIComponent(parent_path).split("%2F").join("/"),
     path: selected_title,
     files: book_list,
+    bookcover: bookCoverPath,
     updateFiles: update_list
   });
 });
