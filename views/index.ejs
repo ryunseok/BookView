@@ -87,7 +87,7 @@
         <h2><img src="<%= bookcover %>"></h2>       
       </div>
       <div id="jb-footer">
-        <h3>Update List(30일 이내)</h3>
+        <h3>Update List(30일 이내) : <%= updateFiles.length %> 권</h3>
         <% for (var i = 0; i < updateFiles.length; ++i) { %>
           <li type="circle">
             <a href="<%= updateFiles[i].path %>" booktitle="<%= updateFiles[i].title %>" >

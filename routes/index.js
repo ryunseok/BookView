@@ -12,6 +12,7 @@ var update_list = [];
 var supportedExt = [".zip", ".rar", ".pdf"];
 var bookCover = [".jpg", ".png"];
 var bookCoverPath = "";
+
 function updatedFile(path, file) {
   //console.log(path);
   var parent_path = "";
@@ -21,27 +22,39 @@ function updatedFile(path, file) {
     parent_path += ('/' + split_path[i]);
     // console.log(i + 'th:' + parent_path);
   }
-  var updated_title, updated_path;
+  var updated_title, updated_path, updated_file;
   parent_path += '/';
   if ('완결' == split_path[split_path.length - 2] || '미완' == split_path[split_path.length - 2]) {
-
+    //만화 - 완결 - 파일명
     updated_title = '[' + split_path[split_path.length - 3] + ']' + file;
+    updated_file = file;
     updated_path = encodeURIComponent(path).split("%2F").join("/").replace('/../../book', "");
   }
   else if ('라이트노벨' == split_path[split_path.length - 2] || 'SF' == split_path[split_path.length - 2]) {
-
+    // 소설 - 완결 - 분류 - 파일명
     updated_title = '[' + split_path[split_path.length - 4] + ']' + file;
+    updated_file = file;
+    updated_path = encodeURIComponent(path).split("%2F").join("/").replace('/../../book', "");
+  }
+  else if ('라이트노벨' == split_path[split_path.length - 3] || 'SF' == split_path[split_path.length - 3]) {
+    // 소설 - 완결 - 분류 - 시리즈 - 파일명
+    updated_title = '[' + split_path[split_path.length - 5] + ']' + split_path[split_path.length - 2];
+    updated_file = split_path[split_path.length - 1];
+    updated_file = updated_file.substr(0, updated_file.length - 4);
     updated_path = encodeURIComponent(path).split("%2F").join("/").replace('/../../book', "");
   }
   else {
-
+    // 소설/만화 - 미완 - 시리즈 - 파일명
     updated_title = '[' + split_path[split_path.length - 4] + ']' + split_path[split_path.length - 2];
+    updated_file = split_path[split_path.length - 1];
+    updated_file = updated_file.substr(0, updated_file.length - 4);
     updated_path = encodeURIComponent(parent_path).split("%2F").join("/").replace('/../../book', "");
   }
 
   return {
     title: updated_title,
     path: updated_path,
+    file: updated_file,
     date: 0
 
   }
@@ -70,7 +83,9 @@ function updateList(path) {
             for (var n = 0; n < update_list.length; n++) {
               if (temp.title == update_list[n].title) {
                // console.log(temp.path);
-                update_list[n] = temp;
+                //console.log(temp.file.substr(temp.file.length - 2, 2));
+                update_list[n].file += ',' + temp.file.substr(temp.file.length - 2, 2);
+                //update_list[n].file += temp.file;
                 bOverlap = true;
               }
             }
@@ -104,7 +119,7 @@ update_list.sort(function (a, b) {
 router.get('/*', function (req, res, next) {
   const path = decodeURIComponent(req.path);
   const dir = fs.readdirSync(__dirname + '/../../book' + path);
-  console.log(req.path);
+  console.log(path);
   function mapFile(filename) {
     const file = fs.statSync(__dirname + '/../../book' + path + filename);
     if (file.isDirectory()) {
