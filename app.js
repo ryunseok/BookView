@@ -7,6 +7,7 @@ var bodyParser = require('body-parser');
 var fs = require('fs');
 
 var routes = require('./routes/index');
+var imageview = require('./routes/imageview');
 
 var app = express();
 
@@ -18,6 +19,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '/../../Book')));
+app.use(express.static(__dirname + '/public'));
 //fs.realpath(__dirname);
 
 
@@ -30,8 +32,8 @@ if (fs.existsSync(htpasswd)) {
   });
   app.use(auth.connect(basic));
 }
-
 app.use('/', routes);
+app.use('/imageview',imageview);
 
 app.use(function(req, res, next) {
   var err = new Error('Not Found');

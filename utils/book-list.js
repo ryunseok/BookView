@@ -2,7 +2,7 @@ var fs = require('fs');
 var supportedExt = [".zip", ".rar", ".pdf"];
 var j = 0;
 var time = new Date();
-var update_list = [];   
+var update_list = [];
 // 파일의 절대 경로를 title/uri로 변환하는 함수
 function ExtractBookLink(path, file) {
     //console.log(path);
@@ -55,7 +55,7 @@ function ExtractBookLink(path, file) {
 
 function extract_updatedList(path) {
     var sub_dir = fs.readdirSync(path);
-    var bOverlap = 0;     
+    var bOverlap = 0;
     //console.log("sub_dir count :" + sub_dir.length + '\n');
     for (var i = 0; i < sub_dir.length; i++) {
         var sub_path = path + "/" + sub_dir[i];
@@ -95,10 +95,60 @@ function extract_updatedList(path) {
     return update_list;
 }
 
+
+
+
+// mapping list
+function mapFile(path) {
+
+    const dir = fs.readdirSync(__dirname + '/../../book' + path);
+
+    // console.log(path);
+    // console.log(dir);
+
+    function mapFile(filename) {
+        const file = fs.statSync(__dirname + '/../../book' + path + filename);        
+        if (file.isDirectory()) {
+            return {
+                isDirectory: true,
+                title: filename,
+                path: encodeURIComponent(path + filename).split("%2F").join("/"),
+                date: (file.mtime.getTime() / 1000)
+            }
+        } else {
+
+            return {
+                isDirectory: false,
+                title: filename,
+                path: encodeURIComponent(path + filename).split("%2F").join("/"),
+                size: file.size,
+                date: (file.mtime.getTime() / 1000),
+                update_date: '\t' + '(' + file.mtime.getFullYear() + '-' + (file.mtime.getMonth() + 1) + '-' + file.mtime.getDate() + ')'
+            }
+        }
+    }
+
+    //check this extension is support
+    function matchExt(file) {
+        if (file.title.startsWith('.')) {
+            return false;
+        }
+        if (file.isDirectory) return true;
+        for (var i = 0; i < supportedExt.length; ++i) {
+            if (file.title.endsWith(supportedExt[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+    return dir.map(mapFile).filter(matchExt);
+}
+
 module.exports = {
 
-    extract : ExtractBookLink,
-    update : extract_updatedList    
+    extract: ExtractBookLink,
+    update: extract_updatedList,
+    mapFile: mapFile   
 }
 
 

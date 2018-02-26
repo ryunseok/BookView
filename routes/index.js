@@ -23,47 +23,9 @@ recent_UpdatedList.sort(function (a, b) {
 
 router.get('/*', function (req, res, next) {
   const path = decodeURIComponent(req.path);
-  const dir = fs.readdirSync(__dirname + '/../../book' + path);
-
-  console.log(path);
-
-  function mapFile(filename) {
-    const file = fs.statSync(__dirname + '/../../book' + path + filename);
-    if (file.isDirectory()) {
-      return {
-        isDirectory: true,
-        title: filename,
-        path: encodeURIComponent(path + filename).split("%2F").join("/"),
-        date: (file.mtime.getTime() / 1000)
-      }
-    } else {
-
-      return {
-        isDirectory: false,
-        title: filename,
-        path: encodeURIComponent(path + filename).split("%2F").join("/"),
-        size: file.size,
-        date: (file.mtime.getTime() / 1000),
-        update_date: '\t' + '(' + file.mtime.getFullYear() + '-' + (file.mtime.getMonth() + 1) + '-' + file.mtime.getDate() + ')'
-      }
-    }
-  }
-
-  //check this extension is support
-  function matchExt(file) {
-    if (file.title.startsWith('.')) {
-      return false;
-    }
-    if (file.isDirectory) return true;
-    for (var i = 0; i < supportedExt.length; ++i) {
-      if (file.title.endsWith(supportedExt[i])) {
-        return true;
-      }    
-    }
-    return false;
-  }
-
-  var book_list = dir.map(mapFile).filter(matchExt);
+  
+  // mapping book list
+  var book_list = book.mapFile(path);
 
   //오름차순 정렬
   book_list.sort(function (a, b) {
