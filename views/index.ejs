@@ -87,11 +87,11 @@
         <h2><img src="<%= bookcover %>"></h2>       
       </div>
       <div id="jb-footer">
-        <h3>Update List(30일 이내) : <%= updateFiles.length %> 권</h3>
-        <% for (var i = 0; i < updateFiles.length; ++i) { %>
+        <h3>Update List(30일 이내) : <%= updatedFiles.length %> 권</h3>
+        <% for (var i = 0; i < updatedFiles.length; ++i) { %>
           <li type="circle">
-            <a href="<%= updateFiles[i].path %>" booktitle="<%= updateFiles[i].title %>" >
-              <%= updateFiles[i].title %>
+            <a href="<%= updatedFiles[i].path %>" booktitle="<%= updatedFiles[i].title %>" >
+              <%= updatedFiles[i].title %>
             </a>
           </li>
           <% } %>
