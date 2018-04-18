@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+  <meta charset="utf-8">
+  <title>함락</title>
+  <link href="/css/style.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+  <div id="jb-container">
+    <div id="jb-header">
+      <h1>분류</h1>
+      <ul>
+        <li>
+          <a href="<%-root_comic %>">만화</a>
+        </li>
+        <li>
+          <a href="<%-root_novel %>">소설</a>
+        </li>
+      </ul>
+    </div>
+    <div id="jb-content">
+      <h2>
+        <%= path %>
+      </h2>
+      <li>
+        <a href="<%=parent%>">상위 폴더로</a>
+      </li>
+      <% for (var i = 0; i < files.length; ++i) { %>
+        <% if (files[i].isDirectory) { %>
+          <li type="circle">
+            <a href="<%= files[i].path %>" booktitle="<%= files[i].title %>" bookdate="<%= files[i].date %>">
+              <%= files[i].title %>
+            </a>
+          </li>
+          <% } else { %>
+            <li>
+              <a href="<%= files[i].path %>" booktitle="<%= files[i].title %>" booksize="<%= files[i].size %>" bookdate="<%= files[i].date %>"
+                bookfile="true">
+
+                <%= files[i].title %>
+                  <%= files[i].update_date %>
+              </a>
+            </li>
+            <% } %>
+              <% } %>
+    </div>
+    <div id="jb-content-image">
+      <h2>
+       <% include bookcover %>
+      </h2>
+    </div>
+    <div id="jb-footer">
+      <h3>Update List(180일 이내) :
+        <%= updatedFiles.length %> 권</h3>
+      <% for (var i = 0; i < updatedFiles.length; ++i) { %>
+        <li type="circle">
+          <a href="<%= updatedFiles[i].path %>" booktitle="<%= updatedFiles[i].title %>">
+            <%= updatedFiles[i].title %>
+          </a>
+        </li>
+        <% } %>
+    </div>
+  </div>
+</body>
+
+</html>

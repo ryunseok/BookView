@@ -56,8 +56,7 @@ router.get('/*', function (req, res, next) {
   parent_path += '/';
   selected_title = split_path[split_path.length - 2];
   // console.log(selected_title);
-
-
+ 
   res.render('index', {
     root_comic: encodeURIComponent("/만화/").split("%2F").join("/"),
     root_novel: encodeURIComponent("/소설/").split("%2F").join("/"),

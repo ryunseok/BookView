@@ -20,28 +20,33 @@ function ExtractBookLink(path, file) {
     if ('완결' == split_path[split_path.length - 2] || '미완' == split_path[split_path.length - 2]) {
         //만화 - 완결 - 파일명
         book_title = '[' + split_path[split_path.length - 3] + ']' + file;
+        console.log(book_title)
         book_file = file;
         book_path = encodeURIComponent(path).split("%2F").join("/").replace('/../../book', "");
+        
+    }
+    else if ('라이트노벨' == split_path[split_path.length - 3] || 'SF' == split_path[split_path.length - 3]) {
+        // 소설 - 완결 - 분류 - 시리즈 - 파일명   
+                        
+        book_title = '[' + split_path[split_path.length - 5] + ']' + split_path[split_path.length - 2];          
+        book_file = split_path[split_path.length - 2];            
+        book_file = book_file.substr(0, book_file.length - 3);              
+        book_path = encodeURIComponent(parent_path).split("%2F").join("/").replace('/../../book', ""); 
+        
     }
     else if ('라이트노벨' == split_path[split_path.length - 2] || 'SF' == split_path[split_path.length - 2]) {
         // 소설 - 완결 - 분류 - 파일명
         book_title = '[' + split_path[split_path.length - 4] + ']' + file;
         book_file = file;
         book_path = encodeURIComponent(path).split("%2F").join("/").replace('/../../book', "");
-    }
-    else if ('라이트노벨' == split_path[split_path.length - 3] || 'SF' == split_path[split_path.length - 3]) {
-        // 소설 - 완결 - 분류 - 시리즈 - 파일명
-        book_title = '[' + split_path[split_path.length - 5] + ']' + split_path[split_path.length - 2];
-        book_file = split_path[split_path.length - 1];
-        book_file = book_file.substr(0, book_file.length - 4);
-        book_path = encodeURIComponent(path).split("%2F").join("/").replace('/../../book', "");
-    }
+    }    
     else {
         // 소설/만화 - 미완 - 시리즈 - 파일명
-        book_title = '[' + split_path[split_path.length - 4] + ']' + split_path[split_path.length - 2];
+        book_title = '[' + split_path[split_path.length - 4] + ']' + split_path[split_path.length - 2];        
         book_file = split_path[split_path.length - 1];
         book_file = book_file.substr(0, book_file.length - 4);
-        book_path = encodeURIComponent(parent_path).split("%2F").join("/").replace('/../../book', "");
+        book_path = encodeURIComponent(parent_path).split("%2F").join("/").replace('/../../book', "");      
+
     }
 
     return {
@@ -68,7 +73,7 @@ function extract_updatedList(path) {
         else {
             elapsedTime = (time.getTime() - file.mtime.getTime()) / (1000 * 3600 * 24); //conversion ms to day
             //console.log(elapsedTime);
-            if (30 > elapsedTime) {
+            if (180 > elapsedTime) {
                 for (var k = 0; k < supportedExt.length; ++k) {
                     if (sub_path.endsWith(supportedExt[k])) {
                         var temp = ExtractBookLink(sub_path, sub_dir[i]);
